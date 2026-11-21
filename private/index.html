@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>KONVO — Conversations Find Their Space</title>
+
+    <meta name="description"
+        content="KONVO is your space for meaningful conversations, private chats and real-time connections.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js" defer></script>
+
+    <style>
+        .profile-menu-container {
+            position: relative;
+            margin-left: auto;
+        }
+
+        .profile-dropdown {
+            position: absolute;
+            bottom: 45px;
+            right: 0;
+            min-width: 150px;
+            padding: 7px;
+            background: #172326;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .profile-dropdown[hidden] {
+            display: none !important;
+        }
+
+        .profile-dropdown button {
+            width: 100%;
+            padding: 11px 13px;
+            border: none;
+            border-radius: 7px;
+            background: transparent;
+            color: #ff7777;
+            font-family: inherit;
+            font-size: 14px;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .profile-dropdown button:hover {
+            background: rgba(255, 100, 100, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <!-- LEFT SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div class="brand">
+                <div class="brand-icon">K</div>
+
+                <div>
+                    <h1>KONVO<span>.</span></h1>
+                    <p>CONVERSATIONS FIND THEIR SPACE</p>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+
+                <p class="section-label">MENU</p>
+
+                <button class="nav-item active">
+                    <span>◈</span>
+                    Chats
+                </button>
+
+                <button class="nav-item">
+                    <span>◎</span>
+                    Contacts
+                </button>
+
+                <button class="nav-item">
+                    <span>◉</span>
+                    Groups
+                </button>
+
+                <button class="nav-item">
+                    <span>☆</span>
+                    Saved
+                </button>
+
+            </div>
+
+            <div class="sidebar-section room-section">
+
+                <div class="section-heading">
+                    <p class="section-label">YOUR ROOMS</p>
+
+                    <button class="add-room" title="Create room">+</button>
+                </div>
+
+                <div id="roomList" class="room-list">
+                    <p class="empty-rooms">Your rooms will appear here.</p>
+                </div>
+
+            </div>
+
+            <div class="sidebar-bottom">
+
+                <div class="profile-card">
+
+                    <div class="avatar" id="profileAvatar">G</div>
+
+                    <div class="profile-info">
+                        <h4 id="profileName">Guest User</h4>
+                        <p>Available</p>
+                    </div>
+
+                    <div class="profile-menu-container">
+
+                        <button
+                            class="profile-menu"
+                            id="profileMenuBtn"
+                            title="Profile settings"
+                            aria-label="Open profile menu"
+                            aria-expanded="false">
+                            •••
+                        </button>
+
+                        <div class="profile-dropdown" id="profileDropdown" hidden>
+
+                            <button id="changeNameBtn">
+                                ↪ Logout
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+
+        <!-- MIDDLE CHAT LIST -->
+
+        <section class="chat-list-panel">
+
+            <div class="chat-list-header">
+
+                <div>
+                    <p class="eyebrow-small">YOUR WORKSPACE</p>
+                    <h2>Messages</h2>
+                </div>
+
+                <button class="new-chat-button" title="New chat">+</button>
+
+            </div>
+
+            <div class="search-container">
+
+                <span>⌕</span>
+
+                <input
+                    type="text"
+                    id="chatSearch"
+                    placeholder="Search conversations...">
+
+            </div>
+
+            <div class="chat-filter">
+
+                <button class="filter-button active">All</button>
+                <button class="filter-button">Unread</button>
+                <button class="filter-button">Groups</button>
+
+            </div>
+
+            <div class="conversation-list" id="conversationList">
+
+                <div class="conversation-empty">
+
+                    <div class="empty-icon">✉</div>
+
+                    <h3>No conversations yet</h3>
+
+                    <p>Your chats will appear here when you connect with people.</p>
+
+                </div>
+
+            </div>
+
+            <!-- ROOM CONTROLS -->
+
+            <div class="room-actions">
+
+                <button class="primary-button" id="createRoomBtn">
+                    + Create a room
+                </button>
+
+                <div class="join-input-group">
+
+                    <input
+                        type="text"
+                        id="roomCodeInput"
+                        placeholder="Enter room code"
+                        maxlength="12">
+
+                    <button id="joinRoomBtn">Join</button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- RIGHT MAIN CHAT AREA -->
+
+        <main class="main-content">
+
+            <header class="topbar">
+
+                <div>
+                    <p class="breadcrumb">
+                        KONVO / <span>MESSAGES</span>
+                    </p>
+                </div>
+
+                <div class="topbar-right">
+
+                    <div class="connection-status">
+
+                        <span class="status-dot"></span>
+
+                        <span id="connectionText">Connecting...</span>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+
+            <!-- WELCOME SCREEN -->
+
+            <section class="welcome-section">
+
+                <div class="welcome-text">
+
+                    <div class="eyebrow">
+                        <span class="eyebrow-dot"></span>
+                        YOUR PERSONAL SPACE
+                    </div>
+
+                    <h2>
+                        Every conversation<br>
+                        <span>has a beginning.</span>
+                    </h2>
+
+                    <p>
+                        Connect with your people, start meaningful
+                        conversations and make every moment count.
+                    </p>
+
+                </div>
+
+                <div class="welcome-decoration">
+
+                    <div class="decoration-circle circle-one"></div>
+                    <div class="decoration-circle circle-two"></div>
+                    <div class="decoration-circle circle-three"></div>
+
+                    <span>K.</span>
+
+                </div>
+
+            </section>
+
+
+            <!-- CHAT WORKSPACE -->
+
+            <section class="chat-workspace">
+
+                <div class="workspace-header">
+
+                    <div>
+                        <p class="eyebrow-small">CONVERSATION</p>
+                        <h3>Messages</h3>
+                    </div>
+
+                    <div id="roomBadge" class="room-badge">
+                        NO ROOM SELECTED
+                    </div>
+
+                </div>
+
+                <div class="chat-area" id="chatArea">
+
+                    <div class="empty-chat">
+
+                        <div class="empty-chat-icon">✳</div>
+
+                        <h3>Your conversations belong here.</h3>
+
+                        <p>
+                            Select a conversation or create a room
+                            to start connecting with people.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <footer class="footer">
+
+                <p>KONVO © 2026</p>
+
+                <p>CONVERSATIONS FIND THEIR SPACE.</p>
+
+            </footer>
+
+        </main>
+
+    </div>
+
+
+    <!-- USERNAME MODAL -->
+
+    <div class="modal-overlay" id="usernameModal">
+
+        <div class="modal">
+
+            <button class="modal-close" id="closeUsernameModal">×</button>
+
+            <div class="modal-icon">✳</div>
+
+            <p class="eyebrow-small">WELCOME TO KONVO</p>
+
+            <h2>What should we call you?</h2>
+
+            <p>Choose a name that people will recognize you by.</p>
+
+            <input
+                type="text"
+                id="usernameInput"
+                placeholder="Enter your username"
+                maxlength="20">
+
+            <button class="modal-button" id="saveUsernameBtn">
+                Let's get started ↗
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- CREATE ROOM MODAL -->
+
+    <div class="modal-overlay" id="createRoomModal">
+
+        <div class="modal">
+
+            <button class="modal-close" id="closeCreateModal">×</button>
+
+            <div class="modal-icon">✳</div>
+
+            <p class="eyebrow-small">CREATE YOUR SPACE</p>
+
+            <h2>Give your room a name.</h2>
+
+            <p>Make it personal. Make it yours.</p>
+
+            <input
+                type="text"
+                id="roomNameInput"
+                placeholder="e.g. Weekend Talks"
+                maxlength="30">
+
+            <button class="modal-button" id="confirmCreateRoom">
+                Create room ↗
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- NOTIFICATION -->
+
+    <div class="toast" id="toast"></div>
+
+
+    <!-- PROFILE MENU FUNCTIONALITY -->
+
+    <script>
+        const profileMenuBtn = document.getElementById("profileMenuBtn");
+        const profileDropdown = document.getElementById("profileDropdown");
+
+        profileMenuBtn.addEventListener("click", function (event) {
+
+            event.stopPropagation();
+
+            profileDropdown.hidden = !profileDropdown.hidden;
+
+            profileMenuBtn.setAttribute(
+                "aria-expanded",
+                String(!profileDropdown.hidden)
+            );
+
+        });
+
+        document.addEventListener("click", function (event) {
+
+            if (
+                !profileMenuBtn.contains(event.target) &&
+                !profileDropdown.contains(event.target)
+            ) {
+
+                profileDropdown.hidden = true;
+
+                profileMenuBtn.setAttribute("aria-expanded", "false");
+
+            }
+
+        });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>KONVO — Conversations Find Their Space</title>
+
+    <meta name="description"
+        content="KONVO is your space for meaningful conversations, private rooms and real-time connections.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js" defer></script>
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <!-- SIDEBAR -->
+
+        <aside class="sidebar">
+
+            <div class="brand">
+                <div class="brand-icon">K</div>
+
+                <div>
+                    <h1>KONVO<span>.</span></h1>
+                    <p>YOUR SPACE TO CONNECT</p>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+
+                <p class="section-label">WORKSPACE</p>
+
+                <button class="nav-item active">
+                    <span>◈</span>
+                    Explore
+                </button>
+
+                <button class="nav-item">
+                    <span>◉</span>
+                    My Rooms
+                </button>
+
+                <button class="nav-item">
+                    <span>☆</span>
+                    Saved
+                </button>
+
+            </div>
+
+            <div class="sidebar-section room-section">
+
+                <div class="section-heading">
+                    <p class="section-label">YOUR ROOMS</p>
+                    <button class="add-room" title="Create room">+</button>
+                </div>
+
+                <div id="roomList" class="room-list">
+                    <p class="empty-rooms">Your rooms will appear here.</p>
+                </div>
+
+            </div>
+
+            <div class="sidebar-bottom">
+
+                <div class="profile-card">
+
+                    <div class="avatar" id="profileAvatar">G</div>
+
+                    <div class="profile-info">
+                        <h4 id="profileName">Guest User</h4>
+                        <p>Ready to connect</p>
+                    </div>
+
+                    <button class="profile-menu">•••</button>
+
+                </div>
+
+            </div>
+
+        </aside>
+
+
+        <!-- MAIN CONTENT -->
+
+        <main class="main-content">
+
+            <header class="topbar">
+
+                <div>
+                    <p class="breadcrumb">WORKSPACE / <span>EXPLORE</span></p>
+                </div>
+
+                <div class="topbar-right">
+
+                    <div class="connection-status">
+                        <span class="status-dot"></span>
+                        <span id="connectionText">Connecting...</span>
+                    </div>
+
+                    <button class="user-button" id="changeNameBtn">
+                        <span>＋</span> Set username
+                    </button>
+
+                </div>
+
+            </header>
+
+
+            <!-- WELCOME SECTION -->
+
+            <section class="welcome-section">
+
+                <div class="welcome-text">
+
+                    <div class="eyebrow">
+                        <span class="eyebrow-dot"></span>
+                        YOUR CONVERSATION SPACE
+                    </div>
+
+                    <h2>
+                        Good conversations<br>
+                        <span>start somewhere.</span>
+                    </h2>
+
+                    <p>
+                        Create your own space, invite your people
+                        and let the conversations flow.
+                    </p>
+
+                </div>
+
+                <div class="welcome-decoration">
+                    <div class="decoration-circle circle-one"></div>
+                    <div class="decoration-circle circle-two"></div>
+                    <div class="decoration-circle circle-three"></div>
+                    <span>K.</span>
+                </div>
+
+            </section>
+
+
+            <!-- ACTION CARDS -->
+
+            <section class="action-section">
+
+                <div class="section-title">
+                    <div>
+                        <p class="eyebrow-small">GET STARTED</p>
+                        <h3>Make your move.</h3>
+                    </div>
+                </div>
+
+
+                <div class="action-grid">
+
+                    <!-- CREATE ROOM -->
+
+                    <div class="action-card create-card">
+
+                        <div class="card-icon purple-icon">✳</div>
+
+                        <span class="card-tag">START SOMETHING NEW</span>
+
+                        <h3>Create a room</h3>
+
+                        <p>
+                            Your space, your people.
+                            Start a conversation on your terms.
+                        </p>
+
+                        <button class="primary-button" id="createRoomBtn">
+                            Create your room <span>↗</span>
+                        </button>
+
+                    </div>
+
+
+                    <!-- JOIN ROOM -->
+
+                    <div class="action-card join-card">
+
+                        <div class="card-icon green-icon">⌘</div>
+
+                        <span class="card-tag">YOU'RE INVITED</span>
+
+                        <h3>Join a room</h3>
+
+                        <p>
+                            Have an invitation code?
+                            Enter it and join the conversation.
+                        </p>
+
+                        <div class="join-input-group">
+
+                            <input
+                                type="text"
+                                id="roomCodeInput"
+                                placeholder="Enter room code"
+                                maxlength="12"
+                            >
+
+                            <button id="joinRoomBtn">Join ↗</button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- CHAT WORKSPACE -->
+
+            <section class="chat-workspace">
+
+                <div class="workspace-header">
+
+                    <div>
+                        <p class="eyebrow-small">YOUR SPACE</p>
+                        <h3>Conversation room</h3>
+                    </div>
+
+                    <div id="roomBadge" class="room-badge">
+                        NO ROOM SELECTED
+                    </div>
+
+                </div>
+
+
+                <div class="chat-area" id="chatArea">
+
+                    <div class="empty-chat">
+
+                        <div class="empty-chat-icon">✳</div>
+
+                        <h3>Your next conversation starts here.</h3>
+
+                        <p>
+                            Create a room or join an existing one
+                            to start connecting with people.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <footer class="footer">
+
+                <p>KONVO © 2026</p>
+
+                <p>CONVERSATIONS FIND THEIR SPACE.</p>
+
+            </footer>
+
+        </main>
+
+    </div>
+
+
+    <!-- USERNAME MODAL -->
+
+    <div class="modal-overlay" id="usernameModal">
+
+        <div class="modal">
+
+            <button class="modal-close" id="closeUsernameModal">×</button>
+
+            <div class="modal-icon">✳</div>
+
+            <p class="eyebrow-small">WELCOME TO KONVO</p>
+
+            <h2>What should we call you?</h2>
+
+            <p>Choose a name that people will recognize you by.</p>
+
+            <input
+                type="text"
+                id="usernameInput"
+                placeholder="Enter your username"
+                maxlength="20"
+            >
+
+            <button class="modal-button" id="saveUsernameBtn">
+                Let's get started ↗
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- CREATE ROOM MODAL -->
+
+    <div class="modal-overlay" id="createRoomModal">
+
+        <div class="modal">
+
+            <button class="modal-close" id="closeCreateModal">×</button>
+
+            <div class="modal-icon">✳</div>
+
+            <p class="eyebrow-small">CREATE YOUR SPACE</p>
+
+            <h2>Give your room a name.</h2>
+
+            <p>Make it personal. Make it yours.</p>
+
+            <input
+                type="text"
+                id="roomNameInput"
+                placeholder="e.g. Weekend Talks"
+                maxlength="30"
+            >
+
+            <button class="modal-button" id="confirmCreateRoom">
+                Create room ↗
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- NOTIFICATION -->
+
+    <div class="toast" id="toast"></div>
+
+</body>
+
+</html>
